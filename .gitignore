@@ -1,3 +1,29 @@
+# Dependencies
+node_modules/
+dist/
+dist-ssr/
+*.local
+
+# Environment variables (CRITICAL)
+.env
+.env.local
+.env.development.local
+.env.test.local
+.env.production.local
+
+# Project specific utilities and test data
+BE/reset_pass.js
+BE/generate_sample_students.cjs
+BE/large_test_import.xlsx
+BE/gen_token.mjs
+BE/diag.js
+BE/reset_db_clean.js
+
+# Internal Documentation & Planning
+vision_scope.md
+PTTKHT.md
+plan.md
+
 # Logs
 logs
 *.log
@@ -137,3 +163,5 @@ dist
 # Vite logs files
 vite.config.js.timestamp-*
 vite.config.ts.timestamp-*
+.DS_Store
+**/.DS_Store
