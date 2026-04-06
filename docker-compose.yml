@@ -13,7 +13,7 @@ services:
       MYSQL_USER: user_admin
       MYSQL_PASSWORD: 20925729858
     ports:
-      - "3306:3306"
+      - "3307:3306"
     volumes:
       - mysql_data:/var/lib/mysql
       # Auto-initialize the database
