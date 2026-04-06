@@ -7,6 +7,7 @@ services:
     container_name: examination-db
     restart: always
     environment:
+      TZ: Asia/Ho_Chi_Minh
       MYSQL_ROOT_PASSWORD: root_password_here
       MYSQL_DATABASE: tracnghiem
       MYSQL_USER: user_admin
@@ -28,6 +29,7 @@ services:
     depends_on:
       - db
     environment:
+      - TZ=Asia/Ho_Chi_Minh
       - PORT=3001
       - DB_HOST=db
       - DB_USER=user_admin
@@ -47,6 +49,8 @@ services:
     restart: always
     depends_on:
       - backend
+    environment:
+      - TZ=Asia/Ho_Chi_Minh
     ports:
       - "8080:80"
     networks:
