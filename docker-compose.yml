@@ -1,0 +1,60 @@
+version: '3.8'
+
+services:
+  # Database Service
+  db:
+    image: mysql:8.0
+    container_name: examination-db
+    restart: always
+    environment:
+      MYSQL_ROOT_PASSWORD: root_password_here
+      MYSQL_DATABASE: tracnghiem
+      MYSQL_USER: user_admin
+      MYSQL_PASSWORD: 20925729858
+    ports:
+      - "3306:3306"
+    volumes:
+      - mysql_data:/var/lib/mysql
+      # Auto-initialize the database
+      - ./BE/schema.sql:/docker-entrypoint-initdb.d/schema.sql
+    networks:
+      - exam-network
+
+  # Backend Service
+  backend:
+    build: ./BE
+    container_name: examination-backend
+    restart: always
+    depends_on:
+      - db
+    environment:
+      - PORT=3001
+      - DB_HOST=db
+      - DB_USER=user_admin
+      - DB_PASSWORD=20925729858
+      - DB_NAME=tracnghiem
+      - JWT_SECRET=supersecretkey123
+      - JWT_EXPIRES_IN=24h
+    ports:
+      - "3001:3001"
+    networks:
+      - exam-network
+
+  # Frontend Service
+  frontend:
+    build: ./FE
+    container_name: examination-frontend
+    restart: always
+    depends_on:
+      - backend
+    ports:
+      - "8080:80"
+    networks:
+      - exam-network
+
+networks:
+  exam-network:
+    driver: bridge
+
+volumes:
+  mysql_data:

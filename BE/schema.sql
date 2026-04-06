@@ -141,3 +141,8 @@ CREATE TABLE Results (
     FOREIGN KEY (exam_id) REFERENCES Exams(exam_id),
     FOREIGN KEY (attempt_id) REFERENCES Attempts(attempt_id)
 );
+
+-- 10. Default Data (Runs on initial setup)
+-- Account: admin / admin123
+INSERT INTO Users (username, password, full_name, email, role, is_active) 
+VALUES ('admin', '$2b$10$sl0FQ.0b6zRD5CYyXKgiBeeRgA.5r5Sbh7gLUlVLVcFcU09W6GxRS', 'Quản trị viên', 'admin@system.com', 'admin', 1);
