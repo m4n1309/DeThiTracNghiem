@@ -1,5 +1,6 @@
 -- Online Examination System - MySQL Database Schema
 -- Last updated to reflect actual database structure
+SET NAMES utf8mb4;
 
 -- 1. Users: Admin & Giảng viên
 CREATE TABLE Users (

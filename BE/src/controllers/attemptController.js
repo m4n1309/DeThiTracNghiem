@@ -286,13 +286,14 @@ export const submitAttempt = async (req, res) => {
 
     // 4. Update Results table ONLY for official attempts
     const [attemptInfo] = await pool.query(
-      `SELECT a.participant_id, a.exam_id, a.attempt_type, e.show_results 
+      `SELECT a.participant_id, a.exam_id, a.attempt_type, e.show_results, e.passing_score 
        FROM Attempts a 
        JOIN Exams e ON a.exam_id = e.exam_id 
        WHERE a.attempt_id = ?`, 
       [attemptId]
     );
-    const { participant_id, exam_id, attempt_type, show_results } = attemptInfo[0];
+    const { participant_id, exam_id, attempt_type, show_results, passing_score } = attemptInfo[0];
+    const isPassed = totalScore >= Number(passing_score) ? 1 : 0;
 
     
     if (attempt_type === 'official') {
@@ -300,13 +301,13 @@ export const submitAttempt = async (req, res) => {
       
       if (existingResult.length > 0) {
         await pool.execute(
-          'UPDATE Results SET total_score = ?, attempt_id = ? WHERE result_id = ?',
-          [totalScore, attemptId, existingResult[0].result_id]
+          'UPDATE Results SET total_score = ?, attempt_id = ?, passed = ? WHERE result_id = ?',
+          [totalScore, attemptId, isPassed, existingResult[0].result_id]
         );
       } else {
         await pool.execute(
-          'INSERT INTO Results (participant_id, exam_id, attempt_id, total_score) VALUES (?, ?, ?, ?)',
-          [participant_id, exam_id, attemptId, totalScore]
+          'INSERT INTO Results (participant_id, exam_id, attempt_id, total_score, passed) VALUES (?, ?, ?, ?, ?)',
+          [participant_id, exam_id, attemptId, totalScore, isPassed]
         );
       }
     }
@@ -322,6 +323,8 @@ export const submitAttempt = async (req, res) => {
       response.score = totalScore;
       response.correctCount = correctCount;
       response.total = details.length;
+      response.isPassed = isPassed === 1;
+      response.passing_score = passing_score;
     }
 
     res.json(response);

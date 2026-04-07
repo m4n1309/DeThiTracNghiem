@@ -62,6 +62,8 @@ const ExamReview: React.FC = () => {
   if (error || !data) return <div className="review-error">{error || 'Dữ liệu không khả dụng'}</div>;
 
   const correctCount = data.details.filter(d => d.is_correct).length;
+  const unansweredCount = data.details.filter(d => d.selected.length === 0).length;
+  const incorrectCount = data.details.length - correctCount - unansweredCount;
   const totalCount = data.details.length;
   const score = ((correctCount / totalCount) * 10).toFixed(1);
 
@@ -109,9 +111,18 @@ const ExamReview: React.FC = () => {
               ))}
             </div>
             <div className="legend">
-              <div className="legend-item"><span className="dot correct"></span> Đúng</div>
-              <div className="legend-item"><span className="dot incorrect"></span> Sai</div>
-              <div className="legend-item"><span className="dot unanswered"></span> Bỏ trống</div>
+              <div className="legend-item">
+                <span className="dot correct"></span> 
+                Đúng: <span className="legend-count">{correctCount}</span>
+              </div>
+              <div className="legend-item">
+                <span className="dot incorrect"></span> 
+                Sai: <span className="legend-count">{incorrectCount}</span>
+              </div>
+              <div className="legend-item">
+                <span className="dot unanswered"></span> 
+                Bỏ trống: <span className="legend-count">{unansweredCount}</span>
+              </div>
             </div>
           </div>
         </aside>

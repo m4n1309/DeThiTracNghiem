@@ -183,7 +183,7 @@ const ExamResults: React.FC = () => {
       'Số báo danh': r.exam_code,
       'Họ và tên': r.full_name,
       'Điểm số': Number(r.total_score).toFixed(2),
-      'Trạng thái': r.total_score >= r.passing_score ? 'ĐẠT' : 'TRƯỢT',
+      'Trạng thái': Number(r.total_score) >= Number(r.passing_score) ? 'ĐẠT' : 'TRƯỢT',
       'Ngày nộp bài': new Date(r.created_at).toLocaleString('vi-VN')
     }));
 
@@ -201,7 +201,7 @@ const ExamResults: React.FC = () => {
   const filteredResults = results.filter(r => {
     const matchesSearch = r.full_name.toLowerCase().includes(searchTerm.toLowerCase()) ||
       r.exam_code.toLowerCase().includes(searchTerm.toLowerCase());
-    const isPassed = r.total_score >= r.passing_score;
+    const isPassed = Number(r.total_score) >= Number(r.passing_score);
     const matchesStatus = statusFilter === 'all' ||
       (statusFilter === 'passed' && isPassed) ||
       (statusFilter === 'failed' && !isPassed);
@@ -447,7 +447,7 @@ const ExamResults: React.FC = () => {
                   </thead>
                   <tbody>
                     {filteredResults.map((r, index) => {
-                      const isPassed = r.total_score >= r.passing_score;
+                        const isPassed = Number(r.total_score) >= Number(r.passing_score);
                       return (
                         <tr key={r.result_id}>
                           <td>{((currentPage - 1) * itemsPerPage) + index + 1}</td>

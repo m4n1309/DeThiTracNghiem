@@ -209,6 +209,48 @@
   font-weight: 700;
 }
 
+.legend {
+  display: flex;
+  flex-direction: column;
+  gap: 0.8rem;
+  padding-top: 1.5rem;
+  border-top: 1px dashed var(--border);
+}
+
+.legend-item {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  font-size: 0.875rem;
+  font-weight: 600;
+  color: var(--text-muted);
+}
+
+.dot {
+  width: 10px;
+  height: 10px;
+  border-radius: 4px;
+}
+
+.dot.correct { background-color: #10b981; }
+.dot.incorrect { background-color: #ef4444; }
+.dot.unanswered { background-color: #94a3b8; }
+
+.legend-count {
+  margin-left: auto;
+  font-weight: 800;
+  color: var(--text-main);
+  background: var(--bg-main);
+  min-width: 1.75rem;
+  height: 1.5rem;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 6px;
+  font-size: 0.75rem;
+  border: 1px solid var(--border);
+}
+
 .explanation-box {
   margin-top: 1.5rem;
   padding: 1rem 1.25rem;

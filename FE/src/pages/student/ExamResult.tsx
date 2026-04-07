@@ -24,7 +24,8 @@ const ExamResult: React.FC = () => {
 
   const showResults = result.showResults !== false;
   const score = parseFloat(result.score || 0).toFixed(1);
-  const isPassed = parseFloat(score) >= 5.0;
+  const passingScore = parseFloat(result.passing_score || 5.0).toFixed(1);
+  const isPassed = result.isPassed !== undefined ? result.isPassed : parseFloat(score) >= parseFloat(passingScore);
 
 
   return (
