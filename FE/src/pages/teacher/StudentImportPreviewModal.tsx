@@ -62,7 +62,7 @@ const StudentImportPreviewModal: React.FC<StudentImportPreviewModalProps> = ({
 
   return (
     <div className="modal-overlay">
-      <div className="modal-content large-modal">
+      <div className="modal-content">
         <div className="modal-header">
           <div className="flex items-center gap-3">
             <div className="p-2 bg-blue-100 rounded-lg text-blue-600">
@@ -96,44 +96,6 @@ const StudentImportPreviewModal: React.FC<StudentImportPreviewModalProps> = ({
                 </div>
               </div>
 
-              <div className="table-responsive">
-                <table className="question-table preview-table">
-                  <thead>
-                    <tr>
-                      <th style={{ width: '60px' }}>STT</th>
-                      <th>Họ và tên</th>
-                      <th>Mã sinh viên</th>
-                      <th>Lớp</th>
-                      <th>Email</th>
-                      <th>Số báo danh (SBD)</th>
-                      <th>Trạng thái</th>
-                    </tr>
-                  </thead>
-                  <tbody>
-                    {participants.map((p, idx) => (
-                      <tr key={idx} className={p.isValid ? '' : 'row-invalid'}>
-                        <td className="text-center font-bold text-slate-400">{p.stt}</td>
-                        <td className="font-medium">{p.fullName}</td>
-                        <td>{p.studentCode}</td>
-                        <td>{p.className}</td>
-                        <td className="text-xs text-slate-500">{p.email}</td>
-                        <td className="font-mono text-blue-600">{p.examCode || '(Tự động)'}</td>
-                        <td>
-                          {p.isValid ? (
-                            <span className="flex items-center gap-1 text-emerald-600 font-medium text-xs">
-                              <CheckCircle2 size={12} /> Hợp lệ
-                            </span>
-                          ) : (
-                            <div className="error-messages text-rose-600 text-xs">
-                              {p.errors.map((err, i) => <div key={i}>{err}</div>)}
-                            </div>
-                          )}
-                        </td>
-                      </tr>
-                    ))}
-                  </tbody>
-                </table>
-              </div>
             </>
           )}
         </div>
