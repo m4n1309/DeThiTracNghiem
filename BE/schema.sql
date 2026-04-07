@@ -43,6 +43,7 @@ CREATE TABLE Questions (
     options        JSON NOT NULL, -- [{"label":"A","text":"..."},...] or string array
     correct_answer JSON NOT NULL, -- ["A"] hoặc ["A","C"] etc.
     difficulty     ENUM('easy','medium','hard') NOT NULL,
+    question_type  ENUM('single', 'multiple') DEFAULT 'single',
     points         DECIMAL(5,2) DEFAULT 1.0,
     image_url      VARCHAR(255),
     is_active      BOOLEAN DEFAULT TRUE,

@@ -1,3 +1,4 @@
+import API_BASE_URL from '../../config/api';
 import React, { useState, useEffect, useCallback } from 'react';
 import axios from 'axios';
 import { useAuth } from '../../context/AuthContext';
@@ -36,7 +37,7 @@ const SubjectManagement: React.FC = () => {
   const fetchSubjects = useCallback(async (page: number) => {
     setLoading(true);
     try {
-      const response = await axios.get(`http://localhost:3001/api/subjects?page=${page}&limit=${itemsPerPage}`, {
+      const response = await axios.get(`${API_BASE_URL}/subjects?page=${page}&limit=${itemsPerPage}`, {
         headers: { Authorization: `Bearer ${token}` }
       });
       setSubjects(response.data.data);
@@ -66,7 +67,7 @@ const SubjectManagement: React.FC = () => {
   const handleDelete = async (id: number) => {
     if (window.confirm('Bạn có chắc chắn muốn XÓA môn học này?')) {
       try {
-        await axios.delete(`http://localhost:3001/api/subjects/${id}`, {
+        await axios.delete(`${API_BASE_URL}/subjects/${id}`, {
           headers: { Authorization: `Bearer ${token}` }
         });
         fetchSubjectsForAction();
@@ -147,12 +148,14 @@ const SubjectManagement: React.FC = () => {
                     </span>
                   </td>
                   <td className="actions-cell">
-                    <button className="action-btn" onClick={() => { setEditingSubject(subject); setIsModalOpen(true); }}>
-                      <Edit2 className="w-4 h-4" />
-                    </button>
-                    <button className="action-btn delete" onClick={() => handleDelete(subject.subject_id)}>
-                      <Trash2 className="w-4 h-4" />
-                    </button>
+                    <div className="actions-wrapper">
+                      <button className="action-btn" title="Sửa" onClick={() => { setEditingSubject(subject); setIsModalOpen(true); }}>
+                        <Edit2 className="w-4 h-4" />
+                      </button>
+                      <button className="action-btn delete" title="Xóa" onClick={() => handleDelete(subject.subject_id)}>
+                        <Trash2 className="w-4 h-4" />
+                      </button>
+                    </div>
                   </td>
                 </tr>
               ))

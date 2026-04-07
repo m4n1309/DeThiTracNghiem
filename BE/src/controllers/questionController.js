@@ -74,7 +74,7 @@ export const getQuestions = async (req, res) => {
       let correctAnswerArr = [];
       try {
         correctAnswerArr = typeof q.correct_answer === 'string' ? JSON.parse(q.correct_answer) : q.correct_answer;
-        if (!Array.isArray(correctAnswerArr)) correctAnswerArr = [correctAnswerArr];
+        if (!Array.isArray(correctAnswerArr)) correctAnswerArr = Array.isArray(correctAnswerArr) ? correctAnswerArr : [correctAnswerArr];
       } catch (e) { correctAnswerArr = []; }
 
       return {
@@ -86,6 +86,7 @@ export const getQuestions = async (req, res) => {
         option_b: optionsArray[1] || '',
         option_c: optionsArray[2] || '',
         option_d: optionsArray[3] || '',
+        // For backwards compatibility in some UI parts
         correct_option: correctAnswerArr[0] || 'A'
       };
     });
@@ -110,7 +111,7 @@ export const getQuestions = async (req, res) => {
  * Create a new question
  */
 export const createQuestion = async (req, res) => {
-  const { subjectId, questionText, optionA, optionB, optionC, optionD, correctOption, imageUrl } = req.body;
+  const { subjectId, questionText, optionA, optionB, optionC, optionD, correctOption, questionType, imageUrl } = req.body;
   const { id, role } = req.user;
 
   try {
@@ -122,12 +123,14 @@ export const createQuestion = async (req, res) => {
     }
 
     const optionsJson = JSON.stringify([optionA, optionB, optionC, optionD]);
-    const correctAnswerJson = JSON.stringify([correctOption]);
+    // correctOption can be a string (single) or array (multiple) from frontend
+    const finalCorrectAnswer = Array.isArray(correctOption) ? correctOption : [correctOption];
+    const correctAnswerJson = JSON.stringify(finalCorrectAnswer);
 
     const [result] = await pool.execute(
-      `INSERT INTO Questions (subject_id, content, options, correct_answer, image_url, created_by, points) 
-       VALUES (?, ?, ?, ?, ?, ?, ?)`,
-      [subjectId, questionText, optionsJson, correctAnswerJson, imageUrl || null, id, 1.0]
+      `INSERT INTO Questions (subject_id, content, options, correct_answer, question_type, image_url, created_by, points) 
+       VALUES (?, ?, ?, ?, ?, ?, ?, ?)`,
+      [subjectId, questionText, optionsJson, correctAnswerJson, questionType || 'single', imageUrl || null, id, 1.0]
     );
 
     res.status(201).json({ message: 'Question created successfully', id: result.insertId });
@@ -142,7 +145,7 @@ export const createQuestion = async (req, res) => {
  */
 export const updateQuestion = async (req, res) => {
   const { id: question_id } = req.params;
-  const { questionText, optionA, optionB, optionC, optionD, correctOption, imageUrl } = req.body;
+  const { questionText, optionA, optionB, optionC, optionD, correctOption, questionType, imageUrl } = req.body;
   const { id: user_id, role } = req.user;
 
   try {
@@ -159,12 +162,13 @@ export const updateQuestion = async (req, res) => {
     }
 
     const optionsJson = JSON.stringify([optionA, optionB, optionC, optionD]);
-    const correctAnswerJson = JSON.stringify([correctOption]);
+    const finalCorrectAnswer = Array.isArray(correctOption) ? correctOption : [correctOption];
+    const correctAnswerJson = JSON.stringify(finalCorrectAnswer);
 
     await pool.execute(
-      `UPDATE Questions SET content = ?, options = ?, correct_answer = ?, image_url = ? 
+      `UPDATE Questions SET content = ?, options = ?, correct_answer = ?, question_type = ?, image_url = ? 
        WHERE question_id = ?`,
-      [questionText, optionsJson, correctAnswerJson, imageUrl, question_id]
+      [questionText, optionsJson, correctAnswerJson, questionType || 'single', imageUrl, question_id]
     );
 
     res.json({ message: 'Question updated successfully' });
@@ -303,14 +307,25 @@ export const importParse = async (req, res) => {
       const optionB = row['B'];
       const optionC = row['C'];
       const optionD = row['D'];
-      const correctOption = row['Đáp án đúng'] ? row['Đáp án đúng'].toString().toUpperCase() : '';
+      const rawCorrect = row['Đáp án đúng'] ? row['Đáp án đúng'].toString().toUpperCase() : '';
       const subjectName = row['Môn'];
 
       const isEmpty = (val) => val === undefined || val === null || val.toString().trim() === '';
 
       if (isEmpty(questionText)) errors.push('Thiếu nội dung câu hỏi');
       if (isEmpty(optionA) || isEmpty(optionB)) errors.push('Cần ít nhất 2 đáp án (A, B)');
-      if (!['A', 'B', 'C', 'D'].includes(correctOption)) errors.push('Đáp án đúng phải là A, B, C hoặc D');
+      
+      // Multi-answer support: "A,B" -> ["A", "B"]
+      const correctOptionsArr = rawCorrect.split(',').map(s => s.trim()).filter(s => s !== '');
+      if (correctOptionsArr.length === 0) {
+        errors.push('Thiếu đáp án đúng');
+      } else {
+        const invalid = correctOptionsArr.filter(opt => !['A', 'B', 'C', 'D'].includes(opt));
+        if (invalid.length > 0) {
+          errors.push(`Đáp án không hợp lệ: ${invalid.join(', ')}. Phải là A, B, C hoặc D.`);
+        }
+      }
+
       if (isEmpty(subjectName)) errors.push('Thiếu tên môn học');
 
       const matchedSubject = allSubjects.find(s =>
@@ -338,7 +353,8 @@ export const importParse = async (req, res) => {
         stt: row['STT'] || index + 1,
         questionText,
         options: [optionA, optionB, optionC, optionD],
-        correctOption,
+        correctOption: correctOptionsArr, // Now an array
+        questionType: correctOptionsArr.length > 1 ? 'multiple' : 'single',
         subjectId: matchedSubject ? matchedSubject.subject_id : null,
         subjectName: matchedSubject ? matchedSubject.subject_name : subjectName,
         isValid: errors.length === 0,
@@ -372,12 +388,12 @@ export const importConfirm = async (req, res) => {
       if (!q.isValid) continue;
 
       const optionsJson = JSON.stringify(q.options);
-      const correctAnswerJson = JSON.stringify([q.correctOption]);
+      const correctAnswerJson = JSON.stringify(Array.isArray(q.correctOption) ? q.correctOption : [q.correctOption]);
 
       await connection.execute(
-        `INSERT INTO Questions (subject_id, content, options, correct_answer, created_by, points) 
-         VALUES (?, ?, ?, ?, ?, ?)`,
-        [q.subjectId, q.questionText, optionsJson, correctAnswerJson, user_id, 1.0]
+        `INSERT INTO Questions (subject_id, content, options, correct_answer, question_type, created_by, points) 
+         VALUES (?, ?, ?, ?, ?, ?, ?)`,
+        [q.subjectId, q.questionText, optionsJson, correctAnswerJson, q.questionType || 'single', user_id, 1.0]
       );
     }
 

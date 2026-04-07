@@ -1,3 +1,4 @@
+import API_BASE_URL from '../../config/api';
 import React, { useState, useEffect } from 'react';
 import axios from 'axios';
 import { X, CheckCircle2 } from 'lucide-react';
@@ -42,7 +43,7 @@ const SubjectModal: React.FC<SubjectModalProps> = ({ subject, onClose, onRefresh
     // 1. Fetch available teachers
     const fetchTeachers = async () => {
       try {
-        const response = await axios.get('http://localhost:3001/api/users?page=1&limit=100', {
+        const response = await axios.get(`${API_BASE_URL}/users?page=1&limit=100`, {
           headers: { Authorization: `Bearer ${token}` }
         });
         // Filter only teachers and active admins
@@ -88,8 +89,8 @@ const SubjectModal: React.FC<SubjectModalProps> = ({ subject, onClose, onRefresh
 
     try {
       const url = subject 
-        ? `http://localhost:3001/api/subjects/${subject.subject_id}` 
-        : 'http://localhost:3001/api/subjects';
+        ? `${API_BASE_URL}/subjects/${subject.subject_id}` 
+        : `${API_BASE_URL}/subjects`;
       
       const method = subject ? 'put' : 'post';
 
@@ -107,8 +108,8 @@ const SubjectModal: React.FC<SubjectModalProps> = ({ subject, onClose, onRefresh
   };
 
   return (
-    <div className="modal-overlay" onClick={onClose}>
-      <div className="modal-content" onClick={(e) => e.stopPropagation()} style={{ maxWidth: '600px' }}>
+    <div className="subject-modal-overlay" onClick={onClose}>
+      <div className="subject-modal-content" onClick={(e) => e.stopPropagation()}>
         <div className="flex justify-between items-center mb-6">
           <h2 className="text-2xl font-black text-[var(--text-main)]">{subject ? 'Chỉnh Sửa Môn Học' : 'Thêm Môn Học Mới'}</h2>
           <button onClick={onClose} className="p-2 hover:bg-[var(--bg-main)] rounded-full transition-colors text-[var(--text-muted)]">

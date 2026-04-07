@@ -1,3 +1,4 @@
+import API_BASE_URL from '../../config/api';
 import React, { useState, useEffect } from 'react';
 import axios from 'axios';
 import { useAuth } from '../../context/AuthContext';
@@ -40,13 +41,13 @@ const MultiDimensionAnalytics: React.FC = () => {
       setLoading(true);
       try {
         const [subjectsRes, passFailRes, trendsRes] = await Promise.all([
-          axios.get('http://localhost:3001/api/results/subjects/stats', {
+          axios.get(`${API_BASE_URL}/results/subjects/stats`, {
             headers: { Authorization: `Bearer ${token}` }
           }),
-          axios.get('http://localhost:3001/api/results/summary/pass-fail', {
+          axios.get(`${API_BASE_URL}/results/summary/pass-fail`, {
             headers: { Authorization: `Bearer ${token}` }
           }),
-          axios.get('http://localhost:3001/api/results/summary/trends', {
+          axios.get(`${API_BASE_URL}/results/summary/trends`, {
             headers: { Authorization: `Bearer ${token}` }
           })
         ]);

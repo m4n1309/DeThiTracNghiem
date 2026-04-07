@@ -1,3 +1,4 @@
+import API_BASE_URL from '../../config/api';
 import React, { useState, useEffect, useCallback } from 'react';
 import { useNavigate, useLocation } from 'react-router-dom';
 import axios from 'axios';
@@ -85,7 +86,7 @@ const ExamManagement: React.FC = () => {
 
   const fetchBankStats = useCallback(async (subjectId: number) => {
     try {
-      const resStats = await axios.get(`http://localhost:3001/api/exams/stats/${subjectId}`, {
+      const resStats = await axios.get(`${API_BASE_URL}/exams/stats/${subjectId}`, {
         headers: { Authorization: `Bearer ${token}` }
       });
       setBankStats(resStats.data);
@@ -98,7 +99,7 @@ const ExamManagement: React.FC = () => {
     if (!token) return;
     setLoading(true);
     try {
-      const res = await axios.get(`http://localhost:3001/api/exams?page=${page}&limit=${itemsPerPage}`, {
+      const res = await axios.get(`${API_BASE_URL}/exams?page=${page}&limit=${itemsPerPage}`, {
         headers: { Authorization: `Bearer ${token}` }
       });
       setExams(res.data.data);
@@ -119,7 +120,7 @@ const ExamManagement: React.FC = () => {
   const fetchSubjects = useCallback(async () => {
     if (!token) return;
     try {
-      const res = await axios.get('http://localhost:3001/api/subjects', {
+      const res = await axios.get(`${API_BASE_URL}/subjects`, {
         headers: { Authorization: `Bearer ${token}` }
       });
       // Handle potential pagination or direct array
@@ -148,11 +149,11 @@ const ExamManagement: React.FC = () => {
 
     try {
       if (editingExam) {
-        await axios.put(`http://localhost:3001/api/exams/${editingExam.exam_id}`, formData, {
+        await axios.put(`${API_BASE_URL}/exams/${editingExam.exam_id}`, formData, {
           headers: { Authorization: `Bearer ${token}` }
         });
       } else {
-        await axios.post('http://localhost:3001/api/exams', formData, {
+        await axios.post(`${API_BASE_URL}/exams`, formData, {
           headers: { Authorization: `Bearer ${token}` }
         });
       }
@@ -168,7 +169,7 @@ const ExamManagement: React.FC = () => {
   const handleDelete = async (id: number) => {
     if (!window.confirm('Bạn có chắc chắn muốn xóa kỳ thi này?')) return;
     try {
-      await axios.delete(`http://localhost:3001/api/exams/${id}`, {
+      await axios.delete(`${API_BASE_URL}/exams/${id}`, {
         headers: { Authorization: `Bearer ${token}` }
       });
       fetchExams(currentPage);
@@ -328,16 +329,16 @@ const ExamManagement: React.FC = () => {
       {/* Exam Configuration Modal */}
       {isModalOpen && (
         <div className="modal-overlay">
-          <div className="modal-content large-modal">
-            <div className="modal-header">
+          <div className="exam-modal-content">
+            <div className="exam-modal-header">
               <h2>{editingExam ? 'Chỉnh sửa kỳ thi' : 'Cấu hình kỳ thi mới'}</h2>
               <button className="close-btn" onClick={() => setIsModalOpen(false)}><X /></button>
             </div>
             <form onSubmit={handleSubmit}>
-              <div className="modal-body scrollable">
+              <div className="exam-modal-body scrollable">
                 <div className="exam-config-unified">
                   {/* Thông tin chung */}
-                  <div className="config-group">
+                  <div className="exam-config-group">
                     <div className="form-group">
                       <label>Tên kỳ thi <span className="required">*</span></label>
                       <input
@@ -425,8 +426,8 @@ const ExamManagement: React.FC = () => {
                   </div>
 
                   {/* Tùy chọn nâng cao */}
-                  <div className="config-group advanced-group">
-                    <h4 className="config-group-title">
+                  <div className="exam-config-group advanced-group">
+                    <h4 className="exam-config-group-title">
                       <Settings2 size={18} /> Tùy chọn nâng cao
                     </h4>
                     <div className="adv-options-grid">
@@ -485,7 +486,7 @@ const ExamManagement: React.FC = () => {
                   </div>
                 </div>
               </div>
-              <div className="modal-footer">
+              <div className="exam-modal-footer">
                 <button type="button" className="btn btn-secondary" onClick={() => setIsModalOpen(false)}>Hủy</button>
                 <button type="submit" className="btn btn-primary">Lưu cấu hình</button>
               </div>

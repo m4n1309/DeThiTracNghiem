@@ -1,3 +1,4 @@
+import API_BASE_URL from '../../config/api';
 import React, { useState, useEffect, useCallback, useRef } from 'react';
 import axios from 'axios';
 import { useAuth } from '../../context/AuthContext';
@@ -66,7 +67,7 @@ const StudentManagement: React.FC = () => {
   const fetchExams = useCallback(async () => {
     if (!token) return;
     try {
-      const res = await axios.get('http://localhost:3001/api/exams', {
+      const res = await axios.get(`${API_BASE_URL}/exams`, {
         headers: { Authorization: `Bearer ${token}` }
       });
       setExams(res.data.data || res.data); // Handle both old and new API response
@@ -79,7 +80,7 @@ const StudentManagement: React.FC = () => {
     if (!selectedExam || !token) return;
     setLoading(true);
     try {
-      const res = await axios.get(`http://localhost:3001/api/students?examId=${selectedExam}&page=${page}&limit=${itemsPerPage}`, {
+      const res = await axios.get(`${API_BASE_URL}/students?examId=${selectedExam}&page=${page}&limit=${itemsPerPage}`, {
         headers: { Authorization: `Bearer ${token}` }
       });
       setParticipants(res.data.data);
@@ -113,11 +114,11 @@ const StudentManagement: React.FC = () => {
     e.preventDefault();
     try {
       if (editingParticipant) {
-        await axios.put(`http://localhost:3001/api/students/${editingParticipant.participant_id}`, formData, {
+        await axios.put(`${API_BASE_URL}/students/${editingParticipant.participant_id}`, formData, {
           headers: { Authorization: `Bearer ${token}` }
         });
       } else {
-        await axios.post('http://localhost:3001/api/students', { ...formData, examId: selectedExam }, {
+        await axios.post(`${API_BASE_URL}/students`, { ...formData, examId: selectedExam }, {
           headers: { Authorization: `Bearer ${token}` }
         });
       }
@@ -134,7 +135,7 @@ const StudentManagement: React.FC = () => {
   const handleDelete = async (id: number) => {
     if (!window.confirm('Bạn có chắc chắn muốn xóa thí sinh này?')) return;
     try {
-      await axios.delete(`http://localhost:3001/api/students/${id}`, {
+      await axios.delete(`${API_BASE_URL}/students/${id}`, {
         headers: { Authorization: `Bearer ${token}` }
       });
       fetchParticipants(currentPage);
@@ -154,7 +155,7 @@ const StudentManagement: React.FC = () => {
 
     setLoading(true);
     try {
-      const response = await axios.post('http://localhost:3001/api/students/import-parse', postData, {
+      const response = await axios.post(`${API_BASE_URL}/students/import-parse`, postData, {
         headers: {
           'Content-Type': 'multipart/form-data',
           Authorization: `Bearer ${token}`
@@ -173,7 +174,7 @@ const StudentManagement: React.FC = () => {
 
   const downloadTemplate = async () => {
     try {
-      const response = await axios.get('http://localhost:3001/api/students/template', {
+      const response = await axios.get(`${API_BASE_URL}/students/template`, {
         headers: { Authorization: `Bearer ${token}` },
         responseType: 'blob'
       });
@@ -342,9 +343,9 @@ const StudentManagement: React.FC = () => {
 
       {/* Add/Edit Modal */}
       {isAddModalOpen && (
-        <div className="modal-overlay">
-          <div className="modal-content">
-            <div className="modal-header">
+        <div className="student-modal-overlay">
+          <div className="student-modal-content">
+            <div className="student-modal-header">
               <h2>{editingParticipant ? 'Sửa thông tin thí sinh' : 'Thêm thí sinh mới'}</h2>
               <button className="close-btn" onClick={() => setIsAddModalOpen(false)}><X /></button>
             </div>
@@ -393,7 +394,7 @@ const StudentManagement: React.FC = () => {
                   />
                 </div>
               </div>
-              <div className="modal-footer">
+              <div className="student-modal-footer">
                 <button type="button" className="btn btn-secondary" onClick={() => setIsAddModalOpen(false)}>Hủy</button>
                 <button type="submit" className="btn btn-primary">Lưu thông tin</button>
               </div>
@@ -422,9 +423,9 @@ const StudentManagement: React.FC = () => {
 
       {/* Bulk Import Modal */}
       {isBulkModalOpen && (
-        <div className="modal-overlay">
-          <div className="modal-content bulk-modal">
-            <div className="modal-header">
+        <div className="student-modal-overlay">
+          <div className="student-modal-content bulk-modal">
+            <div className="student-modal-header">
               <div className="flex items-center gap-3">
                 <div className="p-2 bg-emerald-100 rounded-lg text-emerald-600">
                   <Upload size={24} />
@@ -436,7 +437,7 @@ const StudentManagement: React.FC = () => {
               </div>
               <button className="close-btn" onClick={() => setIsBulkModalOpen(false)}><X /></button>
             </div>
-            <div className="modal-body">
+            <div className="student-modal-body">
               <div className="p-8 border-2 border-dashed border-slate-200 rounded-2xl text-center hover:border-blue-400 transition-colors">
                 <div className="mb-4 inline-flex items-center justify-center w-16 h-16 bg-blue-50 text-blue-500 rounded-full">
                   <Upload size={32} />
@@ -463,7 +464,7 @@ const StudentManagement: React.FC = () => {
                 </div>
               </div>
             </div>
-            <div className="modal-footer">
+            <div className="student-modal-footer">
               <button className="btn btn-secondary" onClick={() => setIsBulkModalOpen(false)}>Hủy bỏ</button>
             </div>
           </div>

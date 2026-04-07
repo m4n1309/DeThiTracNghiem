@@ -142,7 +142,7 @@ export const getAttemptData = async (req, res) => {
   try {
     // Note: We use the shuffled_options stored at start
     const [rows] = await pool.query(
-      `SELECT ad.detail_id, ad.question_id, ad.selected_answer, q.content, q.image_url, ad.shuffled_options
+      `SELECT ad.detail_id, ad.question_id, ad.selected_answer, q.content, q.image_url, q.question_type, ad.shuffled_options
        FROM Attempt_Details ad
        JOIN Questions q ON ad.question_id = q.question_id
        WHERE ad.attempt_id = ?`,
@@ -166,7 +166,8 @@ export const getAttemptData = async (req, res) => {
     const formattedQuestions = rows.map(r => ({
       detail_id: r.detail_id,
       question_id: r.question_id,
-      selected_option: r.selected_answer && r.selected_answer.length > 0 ? r.selected_answer[0] : null,
+      question_type: r.question_type || 'single',
+      selected_options: r.selected_answer || [], // Return full array
       content: r.content,
       options: r.shuffled_options || [],
       image_url: r.image_url
@@ -186,14 +187,18 @@ export const getAttemptData = async (req, res) => {
  * Save progress (update single answer)
  */
 export const updateAnswer = async (req, res) => {
-  const { detailId, answer } = req.body;
+  const { detailId, answer, questionType } = req.body;
 
   try {
-    // Answer coming from frontend is a single string for now.
-    // We store it as a JSON array [answer] to match DB schema.
+    // For MCQ, we might be toggling an answer, or replacing for single choice.
+    // If questionType is provided, we can handle it here, but it's safer to let 
+    // the frontend manage the array and just send the Final State.
+    // However, if 'answer' is an array, we store it. If it's a string, we wrap it.
+    const finalAnswer = Array.isArray(answer) ? answer : [answer];
+
     await pool.execute(
       'UPDATE Attempt_Details SET selected_answer = ? WHERE detail_id = ?',
-      [JSON.stringify([answer]), detailId]
+      [JSON.stringify(finalAnswer), detailId]
     );
     res.json({ success: true });
   } catch (error) {
@@ -224,7 +229,7 @@ export const submitAttempt = async (req, res) => {
 
 
     for (const d of details) {
-      const selectedLabel = d.selected_answer && d.selected_answer.length > 0 ? d.selected_answer[0] : null;
+      const selectedLabels = d.selected_answer || [];
       
       // 1. Resolve correct answers from original labels to original texts
       let originalOptions = d.options;
@@ -240,21 +245,22 @@ export const submitAttempt = async (req, res) => {
       const actualCorrectTexts = (Array.isArray(correctLabels) ? correctLabels : []).map(label => {
         const idx = label.charCodeAt(0) - 65;
         return originalOptions[idx];
-      }).filter(text => text !== undefined);
+      }).filter(text => text !== undefined).sort();
 
-      // 2. Resolve student selection from label to text using shuffled_options
+      // 2. Resolve student selection from labels to texts using shuffled_options
       let currentShuffledOptions = d.shuffled_options;
       if (typeof currentShuffledOptions === 'string') {
         try { currentShuffledOptions = JSON.parse(currentShuffledOptions); } catch (e) { currentShuffledOptions = []; }
       }
 
-      let isCorrect = false;
-      if (selectedLabel) {
-        const optionIndex = selectedLabel.charCodeAt(0) - 65; // A=0, B=1...
-        const chosenOptionText = (Array.isArray(currentShuffledOptions) ? currentShuffledOptions : [])[optionIndex];
-        
-        isCorrect = actualCorrectTexts.includes(chosenOptionText);
-      }
+      const chosenOptionsTexts = (Array.isArray(selectedLabels) ? selectedLabels : []).map(label => {
+        const idx = label.charCodeAt(0) - 65;
+        return (Array.isArray(currentShuffledOptions) ? currentShuffledOptions : [])[idx];
+      }).filter(text => text !== undefined).sort();
+
+      // 3. Compare (All or Nothing)
+      const isCorrect = (actualCorrectTexts.length === chosenOptionsTexts.length) && 
+                        actualCorrectTexts.every((val, index) => val === chosenOptionsTexts[index]);
 
       if (isCorrect) {
         correctCount++;
@@ -387,7 +393,16 @@ export const getAttemptReview = async (req, res) => {
         
         let correctLabels = d.correct_answer;
         if (typeof correctLabels === 'string') {
-          try { correctLabels = JSON.parse(correctLabels); } catch (e) { correctLabels = []; }
+          try {
+            correctLabels = JSON.parse(correctLabels);
+          } catch (e) {
+            // Fallback for non-JSON strings (old data)
+            correctLabels = [correctLabels];
+          }
+        }
+        // Ensure it's an array for mapping
+        if (!Array.isArray(correctLabels)) {
+          correctLabels = [correctLabels];
         }
 
         const actualCorrectTexts = (Array.isArray(correctLabels) ? correctLabels : []).map(label => {
@@ -399,7 +414,7 @@ export const getAttemptReview = async (req, res) => {
           content: d.content,
           image_url: d.image_url,
           options: d.shuffled_options || [],
-          selected: d.selected_answer && d.selected_answer.length > 0 ? d.selected_answer[0] : null,
+          selected: d.selected_answer || [], // Return whole array
           correct: actualCorrectTexts, // Send actual texts instead of labels
           is_correct: d.is_correct === 1
         };

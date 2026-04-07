@@ -1,3 +1,4 @@
+import API_BASE_URL from '../../config/api';
 import React, { useState } from 'react';
 import { X, AlertCircle, CheckCircle2, Users } from 'lucide-react';
 import axios from 'axios';
@@ -39,7 +40,7 @@ const StudentImportPreviewModal: React.FC<StudentImportPreviewModalProps> = ({
     
     setIsImporting(true);
     try {
-      const response = await axios.post('http://localhost:3001/api/students/import-confirm', {
+      const response = await axios.post(`${API_BASE_URL}/students/import-confirm`, {
         examId,
         participants: participants.filter(p => p.isValid)
       }, {
@@ -61,9 +62,9 @@ const StudentImportPreviewModal: React.FC<StudentImportPreviewModalProps> = ({
   };
 
   return (
-    <div className="modal-overlay">
-      <div className="modal-content">
-        <div className="modal-header">
+    <div className="student-modal-overlay">
+      <div className="student-modal-content" style={{ maxWidth: '520px' }}>
+        <div className="student-modal-header">
           <div className="flex items-center gap-3">
             <div className="p-2 bg-blue-100 rounded-lg text-blue-600">
               <Users size={24} />
@@ -76,7 +77,7 @@ const StudentImportPreviewModal: React.FC<StudentImportPreviewModalProps> = ({
           <button className="close-btn" onClick={onClose} disabled={isImporting}><X /></button>
         </div>
 
-        <div className="modal-body scrollable">
+        <div className="student-modal-body">
           {importResult ? (
             <div className={`p-6 rounded-xl text-center ${importResult.success ? 'bg-emerald-50 text-emerald-700' : 'bg-rose-50 text-rose-700'}`}>
               {importResult.success ? <CheckCircle2 className="mx-auto mb-3" size={48} /> : <AlertCircle className="mx-auto mb-3" size={48} />}
@@ -86,13 +87,17 @@ const StudentImportPreviewModal: React.FC<StudentImportPreviewModalProps> = ({
           ) : (
             <>
               <div className="import-summary">
-                <div className="summary-card bg-emerald-50 border border-emerald-100 p-4 rounded-xl flex-1">
-                  <div className="text-emerald-600 font-bold text-2xl">{validCount}</div>
-                  <div className="text-emerald-700 text-sm font-medium">Thí sinh hợp lệ</div>
+                <div className="summary-card bg-emerald-50 border border-emerald-100">
+                  <CheckCircle2 className="text-emerald-500 mb-2" size={32} />
+                  <div className="text-sm text-emerald-600 font-bold uppercase tracking-wider">Hợp lệ</div>
+                  <div className="text-2xl font-black text-emerald-700">{validCount}</div>
+                  <div className="text-xs text-emerald-600 font-medium opacity-80">thí sinh</div>
                 </div>
-                <div className="summary-card bg-rose-50 border border-rose-100 p-4 rounded-xl flex-1">
-                  <div className="text-rose-600 font-bold text-2xl">{invalidCount}</div>
-                  <div className="text-rose-700 text-sm font-medium">Thí sinh lỗi (Sẽ bị bỏ qua)</div>
+                <div className="summary-card bg-rose-50 border border-rose-100">
+                  <AlertCircle className="text-rose-500 mb-2" size={32} />
+                  <div className="text-sm text-rose-600 font-bold uppercase tracking-wider">Lỗi</div>
+                  <div className="text-2xl font-black text-rose-700">{invalidCount}</div>
+                  <div className="text-xs text-rose-600 font-medium opacity-80">thí sinh</div>
                 </div>
               </div>
 
@@ -100,7 +105,7 @@ const StudentImportPreviewModal: React.FC<StudentImportPreviewModalProps> = ({
           )}
         </div>
 
-        <div className="modal-footer">
+        <div className="student-modal-footer">
           <button 
             type="button" 
             className="btn btn-secondary" 

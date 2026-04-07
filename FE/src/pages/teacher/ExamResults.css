@@ -289,7 +289,17 @@
 .status-badge.failed { background: rgba(239, 68, 68, 0.1); color: var(--secondary-red); }
 
 .score-cell { font-family: var(--font-mono); font-weight: 800; font-size: 1.1rem; }
-.time-cell { font-size: 0.8rem; color: var(--text-muted); display: flex; align-items: center; gap: 0.5rem; }
+.time-cell { 
+  font-size: 0.8rem; 
+  color: var(--text-muted); 
+  vertical-align: middle;
+}
+
+.time-wrapper {
+  display: flex; 
+  align-items: center; 
+  gap: 0.5rem; 
+}
 
 .animate-in {
   animation: slide-up 0.5s cubic-bezier(0.4, 0, 0.2, 1);
@@ -354,6 +364,14 @@
 
 .text-center {
   text-align: center;
+  vertical-align: middle;
+}
+
+.actions-wrapper {
+  display: flex;
+  gap: 0.5rem;
+  justify-content: center;
+  align-items: center;
 }
 
 .btn-print-row {

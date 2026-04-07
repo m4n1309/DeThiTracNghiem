@@ -1,3 +1,4 @@
+import API_BASE_URL from '../../config/api';
 import React, { useState, useEffect, useRef, useCallback } from 'react';
 import axios from 'axios';
 import { useAuth } from '../../context/AuthContext';
@@ -22,7 +23,9 @@ interface Question {
   option_b: string;
   option_c: string;
   option_d: string;
-  correct_option: 'A' | 'B' | 'C' | 'D';
+  correct_option: string; // Keep for legacy but we use correct_answer
+  correct_answer?: string[];
+  question_type?: 'single' | 'multiple';
 }
 
 const QuestionBank: React.FC = () => {
@@ -52,7 +55,7 @@ const QuestionBank: React.FC = () => {
   useEffect(() => {
     const fetchSubjects = async () => {
       try {
-        const response = await axios.get('http://localhost:3001/api/questions/my-subjects', {
+        const response = await axios.get(`${API_BASE_URL}/questions/my-subjects`, {
           headers: { Authorization: `Bearer ${token}` }
         });
         setSubjects(response.data);
@@ -71,7 +74,7 @@ const QuestionBank: React.FC = () => {
     if (!selectedSubject) return;
     setLoading(true);
     try {
-      const response = await axios.get(`http://localhost:3001/api/questions?subjectId=${selectedSubject}&page=${page}&limit=${itemsPerPage}`, {
+      const response = await axios.get(`${API_BASE_URL}/questions?subjectId=${selectedSubject}&page=${page}&limit=${itemsPerPage}`, {
         headers: { Authorization: `Bearer ${token}` }
       });
       setQuestions(response.data.data);
@@ -100,7 +103,7 @@ const QuestionBank: React.FC = () => {
   const handleDelete = async (id: number) => {
     if (window.confirm('Bạn có chắc chắn muốn xóa câu hỏi này?')) {
       try {
-        await axios.delete(`http://localhost:3001/api/questions/${id}`, {
+        await axios.delete(`${API_BASE_URL}/questions/${id}`, {
           headers: { Authorization: `Bearer ${token}` }
         });
         fetchQuestionsForAction();
@@ -113,7 +116,7 @@ const QuestionBank: React.FC = () => {
 
   const handleDownloadTemplate = async () => {
     try {
-      const response = await axios.get('http://localhost:3001/api/questions/template', {
+      const response = await axios.get(`${API_BASE_URL}/questions/template`, {
         headers: { Authorization: `Bearer ${token}` },
         responseType: 'blob'
       });
@@ -139,7 +142,7 @@ const QuestionBank: React.FC = () => {
 
     setLoading(true);
     try {
-      const response = await axios.post('http://localhost:3001/api/questions/import-parse', formData, {
+      const response = await axios.post(`${API_BASE_URL}/questions/import-parse`, formData, {
         headers: {
           Authorization: `Bearer ${token}`,
           'Content-Type': 'multipart/form-data'
@@ -263,7 +266,9 @@ const QuestionBank: React.FC = () => {
                       <div className="qb-question-cell">
                         <span className="qb-question-text">{q.question_text}</span>
                         <div className="qb-question-tags">
-                          <span className="qb-tag type">SINGLE CHOICE</span>
+                          <span className={`qb-tag type ${q.question_type || (Array.isArray(q.correct_answer) && q.correct_answer.length > 1 ? 'multiple' : 'single')}`}>
+                            {(q.question_type === 'multiple' || (Array.isArray(q.correct_answer) && q.correct_answer.length > 1)) ? 'MULTIPLE CHOICE' : 'SINGLE CHOICE'}
+                          </span>
                           <span className="qb-tag id">#Q-{String(q.question_id).padStart(4, '0')}</span>
                         </div>
                       </div>
@@ -329,7 +334,9 @@ const QuestionBank: React.FC = () => {
             </div>
             <div className="qb-detail-body">
               <div className="qb-detail-meta">
-                <span className="qb-tag type">SINGLE CHOICE</span>
+                <span className={`qb-tag type ${viewingQuestion.question_type || (Array.isArray(viewingQuestion.correct_answer) && viewingQuestion.correct_answer.length > 1 ? 'multiple' : 'single')}`}>
+                  {(viewingQuestion.question_type === 'multiple' || (Array.isArray(viewingQuestion.correct_answer) && viewingQuestion.correct_answer.length > 1)) ? 'MULTIPLE CHOICE' : 'SINGLE CHOICE'}
+                </span>
                 <span className="qb-tag id">#Q-{String(viewingQuestion.question_id).padStart(4, '0')}</span>
                 <span className="qb-tag subject">
                   {subjects.find(s => s.subject_id === viewingQuestion.subject_id)?.subject_name || 'N/A'}
@@ -344,7 +351,9 @@ const QuestionBank: React.FC = () => {
                 {['A', 'B', 'C', 'D'].map((key) => {
                   const optionKey = `option_${key.toLowerCase()}` as keyof Question;
                   const optionValue = viewingQuestion[optionKey] as string;
-                  const isCorrect = viewingQuestion.correct_option === key;
+                  const isCorrect = Array.isArray(viewingQuestion.correct_answer) 
+                    ? viewingQuestion.correct_answer.includes(key)
+                    : viewingQuestion.correct_option === key;
                   return (
                     <div key={key} className={`qb-option-item ${isCorrect ? 'correct' : ''}`}>
                       <div className="qb-option-letter">{key}</div>

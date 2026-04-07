@@ -1,3 +1,4 @@
+import API_BASE_URL from '../../config/api';
 import React, { useState, useEffect } from 'react';
 import { useNavigate, useLocation } from 'react-router-dom';
 import axios from 'axios';
@@ -42,7 +43,7 @@ const StudentExamLanding: React.FC = () => {
     if (!token || !user || !selectedExam) return;
     setLoading(true);
     try {
-      const res = await axios.post('http://localhost:3001/api/attempts/start', {
+      const res = await axios.post(`${API_BASE_URL}/attempts/start`, {
         examId: selectedExam.exam_id,
         participantId: selectedExam.participant_id,
         attemptType: mode

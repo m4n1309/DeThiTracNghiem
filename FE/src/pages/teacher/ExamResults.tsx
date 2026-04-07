@@ -1,3 +1,4 @@
+import API_BASE_URL from '../../config/api';
 import React, { useState, useEffect, useCallback } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import axios from 'axios';
@@ -114,13 +115,13 @@ const ExamResults: React.FC = () => {
       if (examId) {
         // Fetch detailed data for a specific exam
         const [resResults, resStats, resDist] = await Promise.all([
-          axios.get(`http://localhost:3001/api/results/exam/${examId}?page=${page}&limit=${itemsPerPage}`, {
+          axios.get(`${API_BASE_URL}/results/exam/${examId}?page=${page}&limit=${itemsPerPage}`, {
             headers: { Authorization: `Bearer ${token}` }
           }),
-          axios.get(`http://localhost:3001/api/results/exam/${examId}/stats`, {
+          axios.get(`${API_BASE_URL}/results/exam/${examId}/stats`, {
             headers: { Authorization: `Bearer ${token}` }
           }),
-          axios.get(`http://localhost:3001/api/results/exam/${examId}/distribution`, {
+          axios.get(`${API_BASE_URL}/results/exam/${examId}/distribution`, {
             headers: { Authorization: `Bearer ${token}` }
           })
         ]);
@@ -135,7 +136,7 @@ const ExamResults: React.FC = () => {
       } else {
         // Fetch summaries based on active tab
         const endpoint = activeTab === 'exams' ? 'exams' : 'students';
-        const res = await axios.get(`http://localhost:3001/api/results/summary/${endpoint}?page=${page}&limit=${itemsPerPage}`, {
+        const res = await axios.get(`${API_BASE_URL}/results/summary/${endpoint}?page=${page}&limit=${itemsPerPage}`, {
           headers: { Authorization: `Bearer ${token}` }
         });
 
@@ -238,8 +239,10 @@ const ExamResults: React.FC = () => {
                     </span>
                   </td>
                   <td className="time-cell">
-                    <Clock size={12} />
-                    {new Date(ex.start_time).toLocaleDateString('vi-VN')}
+                    <div className="time-wrapper">
+                      <Clock size={12} />
+                      {new Date(ex.start_time).toLocaleDateString('vi-VN')}
+                    </div>
                   </td>
                 </tr>
               );
@@ -280,8 +283,10 @@ const ExamResults: React.FC = () => {
                   {Number(s.overall_avg_score || 0).toFixed(2)}
                 </td>
                 <td className="time-cell">
-                  <Clock size={12} />
-                  {new Date(s.last_exam_at).toLocaleString('vi-VN')}
+                  <div className="time-wrapper">
+                    <Clock size={12} />
+                    {new Date(s.last_exam_at).toLocaleString('vi-VN')}
+                  </div>
                 </td>
               </tr>
             ))}
@@ -456,24 +461,28 @@ const ExamResults: React.FC = () => {
                             </span>
                           </td>
                           <td className="time-cell">
-                            <Clock size={12} />
-                            {new Date(r.created_at).toLocaleString('vi-VN')}
+                            <div className="time-wrapper">
+                              <Clock size={12} />
+                              {new Date(r.created_at).toLocaleString('vi-VN')}
+                            </div>
                           </td>
                           <td className="text-center">
-                            <button
-                              className="btn-print-row"
-                              title="Xem chi tiết bài làm"
-                              onClick={() => navigate(`/exam-review/${r.attempt_id}`)}
-                            >
-                              <ClipboardList size={16} />
-                            </button>
-                            <button
-                              className="btn-print-row ms-1"
-                              title="In phiếu điểm"
-                              onClick={() => handlePrintClick(r)}
-                            >
-                              <Printer size={16} />
-                            </button>
+                            <div className="actions-wrapper">
+                              <button
+                                className="btn-print-row"
+                                title="Xem chi tiết bài làm"
+                                onClick={() => navigate(`/exam-review/${r.attempt_id}`)}
+                              >
+                                <ClipboardList size={16} />
+                              </button>
+                              <button
+                                className="btn-print-row"
+                                title="In phiếu điểm"
+                                onClick={() => handlePrintClick(r)}
+                              >
+                                <Printer size={16} />
+                              </button>
+                            </div>
                           </td>
                         </tr>
                       );

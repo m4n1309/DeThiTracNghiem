@@ -1,3 +1,4 @@
+import API_BASE_URL from '../../config/api';
 import React, { useState, useEffect } from 'react';
 import axios from 'axios';
 import { X, User } from 'lucide-react';
@@ -39,8 +40,8 @@ const UserModal: React.FC<UserModalProps> = ({ user, onClose, onRefresh, token }
 
     try {
       const url = user 
-        ? `http://localhost:3001/api/users/${user.user_id}` 
-        : 'http://localhost:3001/api/users';
+        ? `${API_BASE_URL}/users/${user.user_id}` 
+        : `${API_BASE_URL}/users`;
       
       const method = user ? 'put' : 'post';
 
@@ -59,18 +60,18 @@ const UserModal: React.FC<UserModalProps> = ({ user, onClose, onRefresh, token }
 
   return (
     <div className="modal-overlay" onClick={onClose}>
-      <div className="modal-content large-modal" onClick={(e) => e.stopPropagation()}>
-        <div className="modal-header">
+      <div className="user-modal-content" onClick={(e) => e.stopPropagation()}>
+        <div className="user-modal-header">
           <h2>{user ? 'Chỉnh Sửa Người Dùng' : 'Thêm Người Dùng Mới'}</h2>
           <button className="close-btn" onClick={onClose}><X size={20} /></button>
         </div>
 
         <form onSubmit={handleSubmit}>
-          <div className="modal-body scrollable">
+          <div className="user-modal-body scrollable">
             {error && <div className="bg-red-50 border border-red-200 text-[var(--secondary-red)] p-4 rounded-xl mb-4 text-sm font-medium">{error}</div>}
 
-            <div className="config-group">
-              <div className="config-group-title">
+            <div className="user-config-group">
+              <div className="user-config-group-title">
                 <User size={18} /> Thông tin người dùng
               </div>
 
@@ -143,7 +144,7 @@ const UserModal: React.FC<UserModalProps> = ({ user, onClose, onRefresh, token }
             </div>
           </div>
 
-          <div className="modal-footer">
+          <div className="user-modal-footer">
             <button 
               type="button" 
               onClick={onClose} 

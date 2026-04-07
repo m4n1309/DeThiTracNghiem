@@ -1,3 +1,4 @@
+import API_BASE_URL from '../../config/api';
 import React, { useState, useEffect, useCallback } from 'react';
 import { useNavigate, useParams, useLocation } from 'react-router-dom';
 import axios from 'axios';
@@ -17,7 +18,8 @@ import './TakingExam.css';
 interface Question {
   detail_id: number;
   question_id: number;
-  selected_option: string | null;
+  selected_options: string[]; // Changed from selected_option: string | null
+  question_type: 'single' | 'multiple';
   content: string;
   options: string[];
   image_url: string | null;
@@ -49,7 +51,7 @@ const TakingExam: React.FC = () => {
   const fetchAttemptData = useCallback(async () => {
     if (!token) return;
     try {
-      const res = await axios.get(`http://localhost:3001/api/attempts/${attemptId}`, {
+      const res = await axios.get(`${API_BASE_URL}/attempts/${attemptId}`, {
         headers: { Authorization: `Bearer ${token}` }
       });
       setQuestions(res.data.questions);
@@ -79,7 +81,7 @@ const TakingExam: React.FC = () => {
     if (!token || isSubmitting) return;
     setIsSubmitting(true);
     try {
-      const res = await axios.post(`http://localhost:3001/api/attempts/${attemptId}/submit`, { tabSwitchCount }, {
+      const res = await axios.post(`${API_BASE_URL}/attempts/${attemptId}/submit`, { tabSwitchCount }, {
         headers: { Authorization: `Bearer ${token}` }
       });
       // Redirect to results with state
@@ -122,18 +124,29 @@ const TakingExam: React.FC = () => {
   const handleAnswerSelect = async (answer: string) => {
     if (!token || !questions[currentIndex]) return;
     const currentQ = questions[currentIndex];
-    if (currentQ.selected_option === answer) return;
+    
+    let newSelected: string[];
+    if (currentQ.question_type === 'single') {
+      if (currentQ.selected_options.includes(answer)) return;
+      newSelected = [answer];
+    } else {
+      // Toggle
+      newSelected = currentQ.selected_options.includes(answer)
+        ? currentQ.selected_options.filter(a => a !== answer)
+        : [...currentQ.selected_options, answer];
+    }
 
     // Update locally
     const newQuestions = [...questions];
-    newQuestions[currentIndex].selected_option = answer;
+    newQuestions[currentIndex].selected_options = newSelected;
     setQuestions(newQuestions);
 
     // Update server (Sync progress)
     try {
-      await axios.post('http://localhost:3001/api/attempts/update-answer', {
+      await axios.post(`${API_BASE_URL}/attempts/update-answer`, {
         detailId: currentQ.detail_id,
-        answer
+        answer: newSelected, // Send full array
+        questionType: currentQ.question_type
       }, {
         headers: { Authorization: `Bearer ${token}` }
       });
@@ -153,7 +166,7 @@ const TakingExam: React.FC = () => {
   }
 
   const currentQ = questions[currentIndex];
-  const progress = (questions.filter(q => q.selected_option).length / questions.length) * 100;
+  const progress = (questions.filter(q => q.selected_options.length > 0).length / questions.length) * 100;
 
   return (
     <div className="exam-taking-container">
@@ -184,7 +197,14 @@ const TakingExam: React.FC = () => {
         {/* Main Question Area */}
         <div className="question-content-area">
           <div className="question-card">
-            <div className="question-number">Câu hỏi {currentIndex + 1}</div>
+            <div className="question-number">
+              Câu hỏi {currentIndex + 1} 
+              {(currentQ.question_type === 'multiple' || currentQ.selected_options.length > 1) && (
+                <span className="text-xs ml-2 py-0.5 px-2 bg-amber-100 text-amber-600 rounded-full font-bold">
+                  CHỌN NHIỀU ĐÁP ÁN
+                </span>
+              )}
+            </div>
             <div className="question-text" dangerouslySetInnerHTML={{ __html: currentQ.content }}></div>
             
             {currentQ.image_url && (
@@ -196,13 +216,20 @@ const TakingExam: React.FC = () => {
             <div className="options-list">
               {currentQ.options.map((opt, idx) => {
                 const label = String.fromCharCode(65 + idx); // A, B, C...
+                const isSelected = currentQ.selected_options.includes(label);
                 return (
                   <label 
                     key={idx} 
-                    className={`option-item ${currentQ.selected_option === label ? 'selected' : ''}`}
+                    className={`option-item ${isSelected ? 'selected' : ''}`}
                     onClick={() => handleAnswerSelect(label)}
                   >
-                    <div className="option-label">{label}</div>
+                    <div className="option-label">
+                      {currentQ.question_type === 'single' ? label : (
+                        <div className={`checkbox-replacement ${isSelected ? 'checked' : ''}`}>
+                          {isSelected ? '✓' : ''}
+                        </div>
+                      )}
+                    </div>
                     <div className="option-text">{opt}</div>
                   </label>
                 );
@@ -219,7 +246,7 @@ const TakingExam: React.FC = () => {
               <ChevronLeft /> Câu trước
             </button>
             <div className="progress-info">
-              Đã làm {questions.filter(q => q.selected_option).length}/{questions.length} câu
+              Đã làm {questions.filter(q => q.selected_options.length > 0).length}/{questions.length} câu
             </div>
             {currentIndex === questions.length - 1 ? (
               <button 
@@ -248,11 +275,11 @@ const TakingExam: React.FC = () => {
             {questions.map((q, idx) => (
               <button 
                 key={idx}
-                className={`nav-grid-item ${currentIndex === idx ? 'current' : ''} ${q.selected_option ? 'answered' : ''}`}
+                className={`nav-grid-item ${currentIndex === idx ? 'current' : ''} ${q.selected_options.length > 0 ? 'answered' : ''}`}
                 onClick={() => setCurrentIndex(idx)}
               >
                 <span className="q-num">{idx + 1}</span>
-                {q.selected_option && <span className="q-check">✓</span>}
+                {q.selected_options.length > 0 && <span className="q-check">✓</span>}
               </button>
             ))}
           </div>

@@ -505,29 +505,64 @@
   color: white;
 }
 
-/* Import Preview Modal (keep existing styles) */
-.large-modal {
-  width: 95%;
-  max-width: 1200px;
+/* Import Preview Modal Namespaced */
+.qb-import-modal-content {
+  width: 90%;
+  max-width: 650px; /* Reduced from 1200px for summary-only view */
   max-height: 90vh;
-  display: flex;
-  flex-direction: column;
+  display: flex !important;
+  flex-direction: column !important;
+  background: white;
+  border-radius: 1.25rem;
+  overflow: hidden;
+  box-shadow: 0 20px 60px rgba(0, 0, 0, 0.2);
 }
 
-.modal-body.scrollable {
+.qb-import-modal-header {
+  padding: 1.5rem 2rem;
+  border-bottom: 1px solid var(--border);
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  background: white;
+  z-index: 10;
+}
+
+.qb-import-modal-body {
   overflow-y: auto;
-  max-height: calc(90vh - 140px);
-  padding: 1.5rem;
+  flex: 1;
+  padding: 2rem;
+  background: #f8fafc;
+}
+
+.qb-import-modal-footer {
+  padding: 1.25rem 2rem;
+  border-top: 1px solid var(--border);
+  display: flex;
+  justify-content: flex-end;
+  gap: 1rem;
+  background: var(--bg-main);
+  z-index: 10;
 }
 
 .import-summary {
-  display: flex;
-  gap: 1.5rem;
-  margin-bottom: 2rem;
+  display: flex !important;
+  gap: 1.5rem !important;
+  margin: 0 auto 2rem auto !important;
+  justify-content: center !important;
+  width: 100% !important;
 }
 
 .summary-card {
   transition: transform 0.2s;
+  display: flex !important;
+  flex-direction: column !important;
+  align-items: center !important;
+  justify-content: center !important;
+  text-align: center !important;
+  min-width: 160px;
+  max-width: 220px;
+  flex: 0 1 auto !important;
 }
 
 .summary-card:hover {

@@ -1,3 +1,4 @@
+import API_BASE_URL from '../../config/api';
 import React, { useState, useEffect } from 'react';
 import axios from 'axios';
 import { useAuth } from '../../context/AuthContext';
@@ -43,7 +44,7 @@ const Dashboard: React.FC = () => {
     const fetchDashboardData = async () => {
       try {
         // 1. Fetch all exams (first page, limit 10 as per user preference)
-        const examsRes = await axios.get('http://localhost:3001/api/exams?page=1&limit=10', {
+        const examsRes = await axios.get(`${API_BASE_URL}/exams?page=1&limit=10`, {
           headers: { Authorization: `Bearer ${token}` }
         });
         
@@ -55,7 +56,7 @@ const Dashboard: React.FC = () => {
         setTotalExamsCount(examMeta.totalItems);
 
         // 2. Fetch subjects assigned to teacher (this returns direct array)
-        const subjectsRes = await axios.get('http://localhost:3001/api/questions/my-subjects', {
+        const subjectsRes = await axios.get(`${API_BASE_URL}/questions/my-subjects`, {
           headers: { Authorization: `Bearer ${token}` }
         });
         const subjects: SubjectData[] = subjectsRes.data;
@@ -63,7 +64,7 @@ const Dashboard: React.FC = () => {
         let qTotal = 0;
         for (const sub of subjects) {
           try {
-            const statsRes = await axios.get(`http://localhost:3001/api/exams/stats/${sub.subject_id}`, {
+            const statsRes = await axios.get(`${API_BASE_URL}/exams/stats/${sub.subject_id}`, {
               headers: { Authorization: `Bearer ${token}` }
             });
             qTotal += statsRes.data.total || 0;

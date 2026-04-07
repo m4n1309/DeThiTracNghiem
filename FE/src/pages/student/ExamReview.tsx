@@ -1,3 +1,4 @@
+import API_BASE_URL from '../../config/api';
 import React, { useState, useEffect } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import axios from 'axios';
@@ -17,7 +18,7 @@ interface ReviewDetail {
   content: string;
   image_url: string | null;
   options: string[];
-  selected: string | null;
+  selected: string[]; // Changed from string | null
   correct: string[];
   is_correct: boolean;
 }
@@ -43,7 +44,7 @@ const ExamReview: React.FC = () => {
     const fetchReview = async () => {
       if (!token) return;
       try {
-        const res = await axios.get(`http://localhost:3001/api/attempts/${attemptId}/review`, {
+        const res = await axios.get(`${API_BASE_URL}/attempts/${attemptId}/review`, {
           headers: { Authorization: `Bearer ${token}` }
         });
         setData(res.data);
@@ -101,7 +102,7 @@ const ExamReview: React.FC = () => {
                 <a 
                   key={idx} 
                   href={`#question-${idx}`}
-                  className={`q-nav-item ${d.is_correct ? 'correct' : (d.selected ? 'incorrect' : 'unanswered')}`}
+                  className={`q-nav-item ${d.is_correct ? 'correct' : (d.selected.length > 0 ? 'incorrect' : 'unanswered')}`}
                 >
                   {idx + 1}
                 </a>
@@ -123,7 +124,7 @@ const ExamReview: React.FC = () => {
                 {d.is_correct ? (
                   <span className="q-status correct"><CheckCircle2 size={16} /> Chính xác</span>
                 ) : (
-                  <span className="q-status incorrect"><XCircle size={16} /> {d.selected ? 'Chưa đúng' : 'Chưa trả lời'}</span>
+                  <span className="q-status incorrect"><XCircle size={16} /> {d.selected.length > 0 ? 'Chưa đúng' : 'Chưa trả lời'}</span>
                 )}
               </div>
 
@@ -134,7 +135,7 @@ const ExamReview: React.FC = () => {
                 <div className="review-options">
                   {d.options.map((opt, oIdx) => {
                     const label = String.fromCharCode(65 + oIdx);
-                    const isSelected = d.selected === label;
+                    const isSelected = d.selected.includes(label);
                     const isCorrect = d.correct.includes(opt);
                     
                     let statusClass = '';

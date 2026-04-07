@@ -1,3 +1,4 @@
+import API_BASE_URL from '../../config/api';
 import React, { useState, useEffect, useCallback } from 'react';
 import axios from 'axios';
 import { useAuth } from '../../context/AuthContext';
@@ -36,7 +37,7 @@ const UserManagement: React.FC = () => {
   const fetchUsers = useCallback(async (page: number) => {
     setLoading(true);
     try {
-      const response = await axios.get(`http://localhost:3001/api/users?page=${page}&limit=${itemsPerPage}`, {
+      const response = await axios.get(`${API_BASE_URL}/users?page=${page}&limit=${itemsPerPage}`, {
         headers: { Authorization: `Bearer ${token}` }
       });
       setUsers(response.data.data);
@@ -64,7 +65,7 @@ const UserManagement: React.FC = () => {
 
   const handleToggleStatus = async (id: number, currentStatus: boolean) => {
     try {
-      await axios.patch(`http://localhost:3001/api/users/${id}/toggle-status`,
+      await axios.patch(`${API_BASE_URL}/users/${id}/toggle-status`,
         { is_active: !currentStatus },
         { headers: { Authorization: `Bearer ${token}` } }
       );
@@ -78,7 +79,7 @@ const UserManagement: React.FC = () => {
   const handleResetPassword = async (id: number) => {
     if (window.confirm('Bạn có chắc chắn muốn đặt lại mật khẩu về mặc định (123456)?')) {
       try {
-        await axios.patch(`http://localhost:3001/api/users/${id}/reset-password`,
+        await axios.patch(`${API_BASE_URL}/users/${id}/reset-password`,
           {},
           { headers: { Authorization: `Bearer ${token}` } }
         );
@@ -93,7 +94,7 @@ const UserManagement: React.FC = () => {
   const handleDeleteUser = async (id: number) => {
     if (window.confirm('Bạn có chắc chắn muốn XÓA VĨNH VIỄN người dùng này?')) {
       try {
-        await axios.delete(`http://localhost:3001/api/users/${id}`, {
+        await axios.delete(`${API_BASE_URL}/users/${id}`, {
           headers: { Authorization: `Bearer ${token}` }
         });
         fetchUsersForAction();
@@ -169,22 +170,24 @@ const UserManagement: React.FC = () => {
                     </span>
                   </td>
                   <td className="actions-cell">
-                    <button className="action-btn" title="Chỉnh sửa" onClick={() => { setEditingUser(user); setIsModalOpen(true); }}>
-                      <Edit2 className="w-4 h-4" />
-                    </button>
-                    <button className="action-btn" title="Reset mật khẩu" onClick={() => handleResetPassword(user.user_id)}>
-                      <RefreshCcw className="w-4 h-4" />
-                    </button>
-                    <button
-                      className={`action-btn ${user.is_active ? '' : 'text-green-500'}`}
-                      title={user.is_active ? "Khóa tài khoản" : "Mở khóa tài khoản"}
-                      onClick={() => handleToggleStatus(user.user_id, user.is_active)}
-                    >
-                      {user.is_active ? <Lock className="w-4 h-4" /> : <Unlock className="w-4 h-4" />}
-                    </button>
-                    <button className="action-btn delete" title="Xóa vĩnh viễn" onClick={() => handleDeleteUser(user.user_id)}>
-                      <Trash2 className="w-4 h-4" />
-                    </button>
+                    <div className="actions-wrapper">
+                      <button className="action-btn" title="Chỉnh sửa" onClick={() => { setEditingUser(user); setIsModalOpen(true); }}>
+                        <Edit2 className="w-4 h-4" />
+                      </button>
+                      <button className="action-btn" title="Reset mật khẩu" onClick={() => handleResetPassword(user.user_id)}>
+                        <RefreshCcw className="w-4 h-4" />
+                      </button>
+                      <button
+                        className={`action-btn ${user.is_active ? '' : 'text-green-500'}`}
+                        title={user.is_active ? "Khóa tài khoản" : "Mở khóa tài khoản"}
+                        onClick={() => handleToggleStatus(user.user_id, user.is_active)}
+                      >
+                        {user.is_active ? <Lock className="w-4 h-4" /> : <Unlock className="w-4 h-4" />}
+                      </button>
+                      <button className="action-btn delete" title="Xóa vĩnh viễn" onClick={() => handleDeleteUser(user.user_id)}>
+                        <Trash2 className="w-4 h-4" />
+                      </button>
+                    </div>
                   </td>
                 </tr>
               ))

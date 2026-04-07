@@ -1,3 +1,4 @@
+import API_BASE_URL from '../../config/api';
 import React from 'react';
 import { X, AlertCircle, CheckCircle2, Download } from 'lucide-react';
 import axios from 'axios';
@@ -6,7 +7,7 @@ export interface PreviewQuestion {
   stt: number;
   questionText: string;
   options: string[];
-  correctOption: string;
+  correctOption: string[];
   subjectId: number | null;
   subjectName: string;
   points: number;
@@ -32,7 +33,7 @@ const ImportPreviewModal: React.FC<ImportPreviewModalProps> = ({ questions, onCl
     
     setLoading(true);
     try {
-      await axios.post('http://localhost:3001/api/questions/import-confirm', 
+      await axios.post(`${API_BASE_URL}/questions/import-confirm`, 
         { questions }, 
         { headers: { Authorization: `Bearer ${token}` } }
       );
@@ -49,8 +50,8 @@ const ImportPreviewModal: React.FC<ImportPreviewModalProps> = ({ questions, onCl
 
   return (
     <div className="modal-overlay">
-      <div className="modal-content">
-        <div className="modal-header">
+      <div className="qb-import-modal-content">
+        <div className="qb-import-modal-header">
           <h2 className="flex items-center gap-2">
             <Download size={24} className="text-blue-500" />
             Xem trước dữ liệu Import
@@ -58,27 +59,25 @@ const ImportPreviewModal: React.FC<ImportPreviewModalProps> = ({ questions, onCl
           <button className="close-btn" onClick={onClose}><X /></button>
         </div>
 
-        <div className="modal-body scrollable">
-          <div className="import-summary mb-6 flex gap-4">
-            <div className="summary-card flex-1 p-4 bg-emerald-50 border border-emerald-100 rounded-xl flex items-center gap-3">
-              <CheckCircle2 className="text-emerald-500" />
-              <div>
-                <div className="text-sm text-emerald-600 font-medium">Hợp lệ</div>
-                <div className="text-2xl font-bold text-emerald-700">{validCount} câu hỏi</div>
-              </div>
+        <div className="qb-import-modal-body">
+          <div className="import-summary">
+            <div className="summary-card p-4 bg-emerald-50 border border-emerald-100 rounded-xl">
+              <CheckCircle2 className="text-emerald-500 mb-2" size={32} />
+              <div className="text-sm text-emerald-600 font-bold uppercase tracking-wider">Hợp lệ</div>
+              <div className="text-2xl font-black text-emerald-700">{validCount}</div>
+              <div className="text-xs text-emerald-600 font-medium opacity-80">câu hỏi</div>
             </div>
-            <div className="summary-card flex-1 p-4 bg-rose-50 border border-rose-100 rounded-xl flex items-center gap-3">
-              <AlertCircle className="text-rose-500" />
-              <div>
-                <div className="text-sm text-rose-600 font-medium">Lỗi</div>
-                <div className="text-2xl font-bold text-rose-700">{invalidCount} câu hỏi</div>
-              </div>
+            <div className="summary-card p-4 bg-rose-50 border border-rose-100 rounded-xl">
+              <AlertCircle className="text-rose-500 mb-2" size={32} />
+              <div className="text-sm text-rose-600 font-bold uppercase tracking-wider">Lỗi</div>
+              <div className="text-2xl font-black text-rose-700">{invalidCount}</div>
+              <div className="text-xs text-rose-600 font-medium opacity-80">câu hỏi</div>
             </div>
           </div>
 
         </div>
 
-        <div className="modal-footer">
+        <div className="qb-import-modal-footer">
           <button className="btn btn-secondary" onClick={onClose} disabled={loading}>Hủy</button>
           <button 
             className="btn btn-primary" 

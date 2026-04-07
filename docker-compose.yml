@@ -8,10 +8,10 @@ services:
     restart: always
     environment:
       TZ: Asia/Ho_Chi_Minh
-      MYSQL_ROOT_PASSWORD: root_password_here
+      MYSQL_ROOT_PASSWORD: ${MYSQL_ROOT_PASSWORD}
       MYSQL_DATABASE: tracnghiem
-      MYSQL_USER: user_admin
-      MYSQL_PASSWORD: 20925729858
+      MYSQL_USER: ${DB_USER}
+      MYSQL_PASSWORD: ${MYSQL_PASSWORD}
     ports:
       - "3307:3306"
     volumes:
@@ -32,13 +32,15 @@ services:
       - TZ=Asia/Ho_Chi_Minh
       - PORT=3001
       - DB_HOST=db
-      - DB_USER=user_admin
-      - DB_PASSWORD=20925729858
+      - DB_USER=${DB_USER}
+      - DB_PASSWORD=${MYSQL_PASSWORD}
       - DB_NAME=tracnghiem
       - JWT_SECRET=supersecretkey123
       - JWT_EXPIRES_IN=24h
-    ports:
-      - "3001:3001"
+      - CORS_ORIGIN=${CORS_ORIGIN}
+    # Port 3001 only exposed internally via nginx proxy
+    expose:
+      - "3001"
     networks:
       - exam-network
 

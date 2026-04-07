@@ -1,3 +1,4 @@
+import API_BASE_URL from '../../config/api';
 import React, { useState, useEffect } from 'react';
 import axios from 'axios';
 import { X, CheckCircle2, Image as ImageIcon, Save } from 'lucide-react';
@@ -18,7 +19,8 @@ const QuestionModal: React.FC<QuestionModalProps> = ({ question, subjectId, onCl
     optionB: '',
     optionC: '',
     optionD: '',
-    correctOption: 'A' as 'A' | 'B' | 'C' | 'D',
+    correctOption: ['A'] as string[], 
+    questionType: 'single' as 'single' | 'multiple',
     imageUrl: ''
   });
   const [loading, setLoading] = useState(false);
@@ -32,7 +34,8 @@ const QuestionModal: React.FC<QuestionModalProps> = ({ question, subjectId, onCl
         optionB: question.option_b,
         optionC: question.option_c,
         optionD: question.option_d,
-        correctOption: question.correct_option,
+        correctOption: Array.isArray(question.correct_answer) ? question.correct_answer : [question.correct_option],
+        questionType: question.question_type || (Array.isArray(question.correct_answer) && question.correct_answer.length > 1 ? 'multiple' : 'single'),
         imageUrl: question.image_url || ''
       });
     }
@@ -43,10 +46,17 @@ const QuestionModal: React.FC<QuestionModalProps> = ({ question, subjectId, onCl
     setLoading(true);
     setError(null);
 
+    // Final validation
+    if (formData.correctOption.length === 0) {
+      setError('Vui lòng chọn ít nhất một đáp án đúng.');
+      setLoading(false);
+      return;
+    }
+
     try {
       const url = question 
-        ? `http://localhost:3001/api/questions/${question.question_id}` 
-        : 'http://localhost:3001/api/questions';
+        ? `${API_BASE_URL}/questions/${question.question_id}` 
+        : `${API_BASE_URL}/questions`;
       
       const method = question ? 'put' : 'post';
 
@@ -63,8 +73,15 @@ const QuestionModal: React.FC<QuestionModalProps> = ({ question, subjectId, onCl
     }
   };
 
-  const handleOptionClick = (opt: 'A' | 'B' | 'C' | 'D') => {
-    setFormData({ ...formData, correctOption: opt });
+  const handleOptionClick = (opt: string) => {
+    if (formData.questionType === 'single') {
+      setFormData({ ...formData, correctOption: [opt] });
+    } else {
+      const newCorrect = formData.correctOption.includes(opt)
+        ? formData.correctOption.filter(o => o !== opt)
+        : [...formData.correctOption, opt];
+      setFormData({ ...formData, correctOption: newCorrect });
+    }
   };
 
   return (
@@ -83,33 +100,64 @@ const QuestionModal: React.FC<QuestionModalProps> = ({ question, subjectId, onCl
           {error && <div className="qmodal-error">{error}</div>}
 
           <form id="question-form" onSubmit={handleSubmit} className="qmodal-form">
-            {/* Section 1: Question Content */}
-            <div className="qmodal-section">
-              <span className="qmodal-section-title">Nội dung câu hỏi</span>
-              <div className="qmodal-field">
-                <textarea 
-                  required
-                  className="qmodal-textarea" 
-                  value={formData.questionText}
-                  onChange={(e) => setFormData({...formData, questionText: e.target.value})}
-                  placeholder="Nhập nội dung câu hỏi trắc nghiệm tại đây..."
-                />
+            {/* Section 1: Question Content & Type */}
+            <div className="flex gap-4">
+              <div className="qmodal-section flex-1">
+                <span className="qmodal-section-title">Loại câu hỏi</span>
+                <div className="flex gap-2 mt-2">
+                  <button 
+                    type="button"
+                    className={`btn-type-toggle ${formData.questionType === 'single' ? 'active' : ''}`}
+                    onClick={() => {
+                      setFormData({ 
+                        ...formData, 
+                        questionType: 'single', 
+                        correctOption: [formData.correctOption[0] || 'A'] 
+                      });
+                    }}
+                  >
+                    Chọn một đáp án
+                  </button>
+                  <button 
+                    type="button"
+                    className={`btn-type-toggle ${formData.questionType === 'multiple' ? 'active' : ''}`}
+                    onClick={() => setFormData({ ...formData, questionType: 'multiple' })}
+                  >
+                    Chọn nhiều đáp án
+                  </button>
+                </div>
+              </div>
+              <div className="qmodal-section flex-[2]">
+                <span className="qmodal-section-title">Nội dung câu hỏi</span>
+                <div className="qmodal-field">
+                  <textarea 
+                    required
+                    className="qmodal-textarea" 
+                    value={formData.questionText}
+                    onChange={(e) => setFormData({...formData, questionText: e.target.value})}
+                    placeholder="Nhập nội dung câu hỏi trắc nghiệm tại đây..."
+                  />
+                </div>
               </div>
             </div>
 
             {/* Section 2: Options */}
             <div className="qmodal-section">
-              <span className="qmodal-section-title">Các lựa chọn trả lời (Nhấn để chọn đáp án đúng)</span>
+              <span className="qmodal-section-title">
+                {formData.questionType === 'single' 
+                  ? 'Các lựa chọn trả lời (Nhấn để chọn đáp án đúng)' 
+                  : 'Các lựa chọn trả lời (Có thể chọn nhiều đáp án đúng)'}
+              </span>
               <div className="qmodal-options-grid">
                 {(['A', 'B', 'C', 'D'] as const).map((opt) => (
                   <div 
                     key={opt} 
-                    className={`qmodal-option-card ${formData.correctOption === opt ? 'active' : ''}`}
+                    className={`qmodal-option-card ${formData.correctOption.includes(opt) ? 'active' : ''}`}
                     onClick={() => handleOptionClick(opt)}
                   >
                     <div className="qmodal-option-header">
                       <div className="qmodal-option-letter">{opt}</div>
-                      {formData.correctOption === opt && (
+                      {formData.correctOption.includes(opt) && (
                         <div className="qmodal-option-status">
                           <CheckCircle2 size={14} /> Correct
                         </div>

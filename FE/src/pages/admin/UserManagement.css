@@ -125,8 +125,13 @@
 }
 
 .actions-cell {
+  vertical-align: middle;
+}
+
+.actions-wrapper {
   display: flex;
   gap: 0.5rem;
+  align-items: center;
 }
 
 .action-btn {
@@ -151,8 +156,8 @@
   border-color: rgba(239, 68, 68, 0.2);
 }
 
-/* Modal Styles Redesign */
-.large-modal {
+/* User Specific Modal Styles */
+.user-modal-content {
   width: 90%;
   max-width: 600px; /* Narrower for user info */
   max-height: 85vh;
@@ -162,10 +167,15 @@
   overflow: hidden;
   border-radius: 1.25rem !important;
   background: white;
-  animation: modalEnter 0.3s cubic-bezier(0.34, 1.56, 0.64, 1);
+  animation: userModalEnter 0.3s cubic-bezier(0.34, 1.56, 0.64, 1);
 }
 
-.modal-header {
+@keyframes userModalEnter {
+  from { opacity: 0; transform: scale(0.95) translateY(10px); }
+  to { opacity: 1; transform: scale(1) translateY(0); }
+}
+
+.user-modal-header {
   padding: 1.25rem 1.75rem;
   border-bottom: 1px solid var(--border);
   display: flex;
@@ -175,7 +185,7 @@
   z-index: 10;
 }
 
-.modal-header h2 {
+.user-modal-header h2 {
   margin: 0;
   font-size: 1.25rem;
   font-weight: 800;
@@ -183,7 +193,7 @@
   letter-spacing: -0.02em;
 }
 
-.modal-body.scrollable {
+.user-modal-body {
   flex: 1;
   overflow-y: auto;
   padding: 1.5rem 1.75rem;
@@ -191,7 +201,11 @@
   text-align: left;
 }
 
-.modal-footer {
+.user-modal-body.scrollable {
+  /* Specific class for scrollable behavior if needed */
+}
+
+.user-modal-footer {
   padding: 1rem 1.75rem;
   border-top: 1px solid var(--border);
   display: flex;
@@ -220,7 +234,7 @@
 }
 
 /* Config Groups */
-.config-group {
+.user-config-group {
   display: flex;
   flex-direction: column;
   gap: 1.25rem;
@@ -232,7 +246,7 @@
   box-shadow: var(--shadow-sm);
 }
 
-.config-group-title {
+.user-config-group-title {
   display: flex;
   align-items: center;
   gap: 0.5rem;
@@ -284,7 +298,7 @@
   cursor: pointer;
 }
 
-@keyframes modalEnter {
+@keyframes userModalEnter {
   from { opacity: 0; transform: scale(0.95) translateY(10px); }
   to { opacity: 1; transform: scale(1) translateY(0); }
 }
